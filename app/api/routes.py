@@ -7,7 +7,7 @@ api = Blueprint('api', __name__, url_prefix='/api')
 @api.route('/getdata')
 def getdata():
     return {'yee' : 'haw'}
-
+#create contact
 @api.route('/contacts', methods = ['POST'])
 @token_required
 def create_contact(current_user_token):
@@ -27,6 +27,7 @@ def create_contact(current_user_token):
     response = contact_schema.dump(contact)
     return jsonify(response)
 
+#get contacts
 @api.route('/contacts', methods = ['GET'])
 @token_required
 def get_contact(current_user_token):
@@ -35,7 +36,36 @@ def get_contact(current_user_token):
     response = contacts_schema.dump(contacts)
     return jsonify(response)
 
+#update contact
+@api.route('/contacts/<id>', methods=['POST', 'PUT'])
+@token_required
+def update_contact(current_user_token, id):
+    contact = Contact.query.get(id)
+    contact.name = request.json['name']
+    contact.email = request.json['email']
+    contact.phone_number = request.json['phone_number']
+    contact.address = request.json['address']
+    contact.user_token = current_user_token.token
 
+    db.session.commit()
+    response = contact_schema.dump(contact)
+    return jsonify(response)
 
+#get single contact
+@api.route('contacts/<id>', methods = ['GET'])
+@token_required
+def get_single_contact(current_user_token, id):
+    contact = Contact.query.get(id)
+    response = contact_schema.dump(contact)
+    return jsonify(response)
 
+#delete contact
+@api.route('/contacts/<id>', methods=['DELETE'])
+@token_required
+def delete_contact(current_user_token, id):
+    contact = Contact.query.get(id)
+    db.session.delete(contact)
+    db.session.commit()
+    response = contact_schema.dump(contact)
+    return jsonify(response)
 
